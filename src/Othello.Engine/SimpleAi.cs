@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Othello.Engine;
+﻿namespace Othello.Engine;
 
 internal class SimpleAi : IAi
 {
-    public int GetIndex(IReadOnlyList<PlayerColor?> table, PlayerColor currentPlayer)
+    public int GetIndex(GameTable table, PlayerColor player)
     {
         var candidates = new List<CandidateToPlace>();
         for(int i = 0; i < 64; i++)
         {
-            if(!Rules.CanPlaceStone(table, currentPlayer, i))
+            if(!Rules.CanPlaceStone(table, player, i))
             {
                 continue;
             }
 
-            var stones = Rules.GetFlippableStones(table, currentPlayer, i);
+            var stones = Rules.GetFlippableStones(table, player, i);
 
             candidates.Add(new CandidateToPlace(Position.FromIndex(i), GetPositions(stones).ToList()));
         }

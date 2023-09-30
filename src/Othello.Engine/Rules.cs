@@ -4,14 +4,14 @@ namespace Othello.Engine;
 
 internal class Rules
 {
-    public static bool CanPlaceStone(IReadOnlyList<PlayerColor?> table, PlayerColor currentPlayer, int index)
+    public static bool CanPlaceStone(GameTable table, PlayerColor player, int index)
     {
         index.Throw().IfOutOfRange(0, 63);
 
-        return table[index] == null && GetFlippableStones(table, currentPlayer, index) > 0;
+        return table[index] == null && GetFlippableStones(table, player, index) > 0;
     }
 
-    public static ulong GetFlippableStones(IReadOnlyList<PlayerColor?> table, PlayerColor currentPlayer, int index)
+    public static ulong GetFlippableStones(GameTable table, PlayerColor player, int index)
     {
         index.Throw().IfOutOfRange(0, 63);
 
@@ -34,7 +34,7 @@ internal class Rules
 
             while (next.TryMove(deltaX, deltaY, out Position candidateForNext) && table[candidateForNext.Index] is not null)
             {
-                if (table[candidateForNext.Index] == currentPlayer)
+                if (table[candidateForNext.Index] == player)
                 {
                     return flippedStones;
                 }

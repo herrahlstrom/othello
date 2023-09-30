@@ -49,16 +49,20 @@ public partial class Game
         }
         else
         {
-            OthelloGame.LoadGame(Token);
+            OthelloGame.Load(Token);
         }
+        
+        AfterStonePlaced();
     }
 
     private void AfterStonePlaced()
     {
+        _errorCells.Clear();
+
         SaveGameState();
 
-        WhitePlayer.Points = OthelloGame.Table.Count(x => x == WhitePlayer.Color);
-        BlackPlayer.Points = OthelloGame.Table.Count(x => x == BlackPlayer.Color);
+        WhitePlayer.Points = OthelloGame.Table.NumberOf(WhitePlayer.Color);
+        BlackPlayer.Points = OthelloGame.Table.NumberOf(BlackPlayer.Color);
 
         if (CurrentPlayer.Ai)
         {
@@ -91,7 +95,6 @@ public partial class Game
     {
         if (OthelloGame.CanPlaceStone(index))
         {
-            _errorCells.Clear();
             OthelloGame.PlaceStone(index);
 
             AfterStonePlaced();
@@ -128,12 +131,7 @@ public partial class Game
     {
         OthelloGame.InitGame();
 
-        _errorCells.Clear();
-
-        if (CurrentPlayer.Ai)
-        {
-            _aiDelay.Start();
-        }
+        AfterStonePlaced();
     }
 }
 

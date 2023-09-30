@@ -6,35 +6,25 @@ using Throw;
 
 namespace Othello.Engine;
 
-public class Game
+public class Game : ISerialiable
 {
-    public readonly PlayerColor?[] _table;
     private readonly IAi _ai;
 
     public Game(IAi ai)
     {
         _ai = ai;
-        _table = new PlayerColor?[64];
+        Table = new GameTable();
     }
 
     public PlayerColor CurrentPlayer { get; private set; }
 
-    public IReadOnlyList<PlayerColor?> Table => _table;
+    public GameTable Table { get; }
 
-    public bool CanPlaceStone(int index) => Rules.CanPlaceStone(_table, CurrentPlayer, index);
+    public bool CanPlaceStone(int index) => Rules.CanPlaceStone(Table, CurrentPlayer, index);
 
     public void InitGame(PlayerColor? startPlayer = null)
     {
-        for (int i = 0; i < _table.Length; i++)
-        {
-            _table[i] = null;
-        }
-
-        _table[new Position(3, 3).Index] = PlayerColor.Black;
-        _table[new Position(4, 4).Index] = PlayerColor.Black;
-
-        _table[new Position(4, 3).Index] = PlayerColor.White;
-        _table[new Position(3, 4).Index] = PlayerColor.White;
+        Table.InitNewGame();
 
         CurrentPlayer = startPlayer is { } sp
             ? sp
@@ -43,7 +33,7 @@ public class Game
                 : PlayerColor.Black;
     }
 
-    public void LoadGame(string data)
+    public void Load(string data)
     {
         var bytes = Convert.FromBase64String(data);
         var json = Encoding.UTF8.GetString(bytes);
@@ -54,41 +44,19 @@ public class Game
             ? PlayerColor.White
             : PlayerColor.Black;
 
-        for (int i = 0; i < _table.Length; i++)
-        {
-            ulong value = (ulong)1 << i;
-            if ((model.White & value) == value)
-            {
-                _table[i] = PlayerColor.White;
-            }
-            else if ((model.Black & value) == value)
-            {
-                _table[i] = PlayerColor.Black;
-            }
-        }
+        Table.Load(model.Table);
     }
 
     public void PlaceStone(int index)
     {
-        index.Throw().IfOutOfRange(0, 63);
-
-        var stonesToFlip = Rules.GetFlippableStones(_table, CurrentPlayer, index);
-        _table[index] = CurrentPlayer;
-        for (int i = 0; stonesToFlip > 0; i++)
-        {
-            if ((stonesToFlip & 1) == 1)
-            {
-                _table[i] = CurrentPlayer;
-            }
-            stonesToFlip >>= 1;
-        }
+        Table.PlaceStone(index, CurrentPlayer);
 
         CurrentPlayer = CurrentPlayer.Equals(PlayerColor.White) ? PlayerColor.Black : PlayerColor.White;
     }
 
     public void PlaceStoneWithAi()
     {
-        var index = _ai.GetIndex(_table, CurrentPlayer);
+        var index = _ai.GetIndex(Table, CurrentPlayer);
         PlaceStone(index);
     }
 
@@ -99,11 +67,11 @@ public class Game
 
         for (int i = 0; i < 64; i++)
         {
-            if (_table[i] == PlayerColor.White)
+            if (Table[i] == PlayerColor.White)
             {
                 white |= (ulong)1 << i;
             }
-            else if (_table[i] == PlayerColor.Black)
+            else if (Table[i] == PlayerColor.Black)
             {
                 black |= (ulong)1 << i;
             }
@@ -111,8 +79,7 @@ public class Game
 
         var model = new SerializeGame(
             Current: CurrentPlayer == PlayerColor.White ? "W" : "B",
-            White: white,
-            Black: black);
+            Table: Table.Serialize());
 
         var json = JsonSerializer.Serialize(model);
         var bytes = Encoding.UTF8.GetBytes(json);
@@ -121,6 +88,5 @@ public class Game
 
     private record SerializeGame(
         [property: JsonPropertyName("C")] string Current,
-        [property: JsonPropertyName("W")] ulong White,
-        [property: JsonPropertyName("B")] ulong Black);
+        [property: JsonPropertyName("T")] string Table);
 }

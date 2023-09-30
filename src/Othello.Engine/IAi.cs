@@ -5,5 +5,5 @@ namespace Othello.Engine;
 
 public interface IAi
 {
-    int GetIndex(IReadOnlyList<PlayerColor?> table, PlayerColor currentPlayer);
+    int GetIndex(GameTable table, PlayerColor player);
 }
