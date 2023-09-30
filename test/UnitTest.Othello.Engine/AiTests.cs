@@ -13,7 +13,7 @@ public class AiTests
     [TestMethod]
     public void AI_Start_Someting()
     {
-        var ai = new Ai();
+        var ai = new SimpleAi();
 
         var table = new Game(ai);
         table.InitGame(PlayerColor.White);

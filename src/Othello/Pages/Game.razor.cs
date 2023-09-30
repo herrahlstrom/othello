@@ -5,43 +5,11 @@ using System.Web;
 
 namespace Othello.Pages;
 
-public class Player
-{
-    private bool _ai;
-    public bool Ai
-    {
-        get => _ai; set
-        {
-            _ai = value;
-
-            if (value)
-            {
-                AiActivated?.Invoke(this, EventArgs.Empty);
-            }
-        }
-    }
-    public string Name { get; }
-    public PlayerColor Color { get; }
-
-    public Player(PlayerColor color, string name)
-    {
-        Color = color;
-        Name = name;
-    }
-
-    public event EventHandler AiActivated;
-}
-
 public partial class Game
 {
     private const string TokenQueryName = "token";
     private System.Timers.Timer _aiDelay;
     HashSet<int> _errorCells = new();
-
-    public Player WhitePlayer { get; }
-    public Player BlackPlayer { get; }
-
-    public Player CurrentPlayer => OthelloGame.CurrentPlayer == PlayerColor.White ? WhitePlayer : BlackPlayer;
 
     public Game()
     {
@@ -51,20 +19,27 @@ public partial class Game
         WhitePlayer = new Player(PlayerColor.White, "Vit");
         WhitePlayer.AiActivated += Player_AiActivated;
 
-        BlackPlayer = new Player(PlayerColor.Black, "Svart");        
+        BlackPlayer = new Player(PlayerColor.Black, "Svart");
         BlackPlayer.AiActivated += Player_AiActivated;
     }
 
-    private void Player_AiActivated(object? sender, EventArgs e)
+    public Player BlackPlayer { get; }
+
+    public Player CurrentPlayer => Players.First(x => x.Color == OthelloGame.CurrentPlayer);
+
+    public IEnumerable<Player> Players
     {
-        if(sender == CurrentPlayer)
+        get
         {
-            _aiDelay.Start();
+            yield return WhitePlayer;
+            yield return BlackPlayer;
         }
     }
 
     [Parameter, SupplyParameterFromQuery(Name = TokenQueryName)]
     public string? Token { get; set; }
+
+    public Player WhitePlayer { get; }
 
     protected override void OnInitialized()
     {
@@ -78,11 +53,38 @@ public partial class Game
         }
     }
 
-    private void AiDelayTimerElapsed(object? sender, ElapsedEventArgs e)
+    private void AfterStonePlaced()
     {
-        OthelloGame.PlaceStoneWithAi();
+        SaveGameState();
+
+        WhitePlayer.Points = OthelloGame.Table.Count(x => x == WhitePlayer.Color);
+        BlackPlayer.Points = OthelloGame.Table.Count(x => x == BlackPlayer.Color);
+
+        if (CurrentPlayer.Ai)
+        {
+            _aiDelay.Start();
+        }
 
         StateHasChanged();
+    }
+
+    private void AiDelayTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        if (sender == null)
+        {
+            throw new ArgumentNullException(nameof(sender), $"{nameof(sender)} is null.");
+        }
+
+        if (e == null)
+        {
+            throw new ArgumentNullException(nameof(e), $"{nameof(e)} is null.");
+        }
+
+        if (!CurrentPlayer.Ai) { return; }
+
+        OthelloGame.PlaceStoneWithAi();
+
+        AfterStonePlaced();
     }
 
     private void PlaceStone(int index)
@@ -92,16 +94,19 @@ public partial class Game
             _errorCells.Clear();
             OthelloGame.PlaceStone(index);
 
-            SaveGameState();
-
-            if (CurrentPlayer.Ai)
-            {
-                _aiDelay.Start();
-            }
+            AfterStonePlaced();
         }
         else
         {
             _errorCells.Add(index);
+        }
+    }
+
+    private void Player_AiActivated(object? sender, EventArgs e)
+    {
+        if (sender == CurrentPlayer)
+        {
+            _aiDelay.Start();
         }
     }
 
@@ -124,5 +129,39 @@ public partial class Game
         OthelloGame.InitGame();
 
         _errorCells.Clear();
+
+        if (CurrentPlayer.Ai)
+        {
+            _aiDelay.Start();
+        }
     }
+}
+
+public class Player
+{
+    private bool _ai;
+
+    public Player(PlayerColor color, string name)
+    {
+        Color = color;
+        Name = name;
+    }
+
+    public event EventHandler AiActivated;
+
+    public bool Ai
+    {
+        get => _ai; set
+        {
+            _ai = value;
+
+            if (value)
+            {
+                AiActivated?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+    public PlayerColor Color { get; }
+    public string Name { get; }
+    public int Points { get; set; }
 }

@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAi(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<IAi, Ai>();
+        serviceCollection.AddSingleton<IAi, SimpleAi>();
         return serviceCollection;
     }
 

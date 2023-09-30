@@ -7,18 +7,15 @@
 <PageTitle>Othello</PageTitle>
 
 <div class="players">
-    <div class="player white @(OthelloGame.CurrentPlayer == Engine.PlayerColor.White ? "current":"")">
-        <div class="name">Vit</div>
-        <div class="points">@OthelloGame.WhitePoints</div>
-        <div class="icon"></div>
-        <div class="ai">AI: <InputCheckbox @bind-Value="WhitePlayer.Ai" /></div>
-    </div>
-    <div class="player black @(OthelloGame.CurrentPlayer == Engine.PlayerColor.Black ? "current":"")">
-        <div class="name">Svart</div>
-        <div class="points">@OthelloGame.BlackPoints</div>
-        <div class="icon"></div>
-        <div class="ai">AI: <InputCheckbox @bind-Value="BlackPlayer.Ai" /></div>
-    </div>
+    @foreach (var player in Players)
+    {
+        <div class="player @(player.Color.ToString().ToLower()) @(OthelloGame.CurrentPlayer == player.Color ? "current":"")">
+            <div class="name">@player.Name</div>
+            <div class="points">@player.Points</div>
+            <div class="icon"></div>
+            <div class="ai">AI: <InputCheckbox @bind-Value="player.Ai" /></div>
+        </div>
+    }
 </div>
 
 <div class="o-content">
@@ -29,7 +26,7 @@
             <div class="o-cell">
                 @if (OthelloGame.Table[index] is null)
                 {
-                    <button @onclick="()=>PlaceStone(index)" class="@(_errorCells.Contains(i)?"error":"")"></button>
+                    <button @onclick="()=>OnPlaceButtonClick(index)" class="@(_errorCells.Contains(i)?"error":"")"></button>
                 }
                 else
                 {
@@ -50,6 +47,7 @@
 @code {
     private void OnPlaceButtonClick(int index)
     {
-        
+        if (CurrentPlayer.Ai) { return; }
+        PlaceStone(index);
     }
 }

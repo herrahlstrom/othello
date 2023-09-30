@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Othello.Engine;
 
-internal class Ai : IAi
+internal class SimpleAi : IAi
 {
     public int GetIndex(IReadOnlyList<PlayerColor?> table, PlayerColor currentPlayer)
     {
