@@ -1,0 +1,91 @@
+﻿@page "/game"
+@using System.Web;
+@inject NavigationManager NavMan;
+@layout EmptyLayout
+
+<PageTitle>Othello</PageTitle>
+
+<div class="players">
+    <div class="player white @(_game.CurrentPlayer == Engine.PlayerColor.White ? "current":"")">
+        <div class="name">Vit</div>
+        <div class="icon"></div>
+    </div>
+    <div class="player black @(_game.CurrentPlayer == Engine.PlayerColor.Black ? "current":"")">
+        <div class="name">Svart</div>
+        <div class="icon"></div>
+    </div>
+</div>
+
+<div class="o-content">
+    <div class="o-table">
+        @for (int i = 0; i < 64; i++)
+        {
+            int index = i;
+            <div class="o-cell">
+                @if (_game.Table[index] is null)
+                {
+                    <button @onclick="()=>PlaceStone(index)" class="@(_errorCells.Contains(i)?"error":"")"></button>
+                }
+                else
+                {
+                    string whiteCssStatus = _game.Table[index].Equals(Othello.Engine.PlayerColor.White) ? "up" : "down";
+                    string blackCssStatus = _game.Table[index].Equals(Othello.Engine.PlayerColor.Black) ? "up" : "down";
+                    <div class="stone white @(whiteCssStatus)"></div>
+                    <div class="stone black @(blackCssStatus)"></div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private const string TokenQueryName = "token";
+    private Othello.Engine.Game _game = default!;
+    HashSet<int> _errorCells = new();
+
+    [Parameter, SupplyParameterFromQuery(Name = TokenQueryName)]
+    public string? Token { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _game = new Othello.Engine.Game();
+
+        if (string.IsNullOrEmpty(Token))
+        {
+            _game.InitGame();
+        }
+        else
+        {
+            _game.LoadGame(Token);
+        }
+    }
+
+    private void PlaceStone(int index)
+    {
+        if (_game.CanPlaceStone(index))
+        {
+            _errorCells.Clear();
+            _game.PlaceStone(index);
+
+            SaveGameState();
+        }
+        else
+        {
+            _errorCells.Add(index);
+        }
+    }
+
+    private void SaveGameState()
+    {
+        Token = _game.Serialize();
+
+        var uri = NavMan.ToAbsoluteUri(NavMan.Uri);
+        var queryCollection = HttpUtility.ParseQueryString(uri.Query);
+        queryCollection[TokenQueryName] = Token;
+
+        var uriBuilder = new UriBuilder(uri);
+        uriBuilder.Query = queryCollection.ToString();
+
+        NavMan.NavigateTo(uriBuilder.Uri.AbsoluteUri, new NavigationOptions() { ForceLoad = false, ReplaceHistoryEntry = true });
+    }
+}

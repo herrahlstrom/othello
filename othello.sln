@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Othello", "src\Othello\Othello.csproj", "{CDE68A15-0C86-4708-BD0B-EA96C04E75ED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Othello.Engine", "src\Othello.Engine\Othello.Engine.csproj", "{576A105C-B423-4D34-8C34-4D9B7F399F02}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4DAAE153-A634-4B3E-A6D5-37D6345182A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest.Othello.Engine", "test\UnitTest.Othello.Engine\UnitTest.Othello.Engine.csproj", "{57413020-A63B-4C01-98E3-2A1AE1392A11}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDE68A15-0C86-4708-BD0B-EA96C04E75ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDE68A15-0C86-4708-BD0B-EA96C04E75ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDE68A15-0C86-4708-BD0B-EA96C04E75ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDE68A15-0C86-4708-BD0B-EA96C04E75ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{576A105C-B423-4D34-8C34-4D9B7F399F02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{576A105C-B423-4D34-8C34-4D9B7F399F02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{576A105C-B423-4D34-8C34-4D9B7F399F02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{576A105C-B423-4D34-8C34-4D9B7F399F02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57413020-A63B-4C01-98E3-2A1AE1392A11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57413020-A63B-4C01-98E3-2A1AE1392A11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57413020-A63B-4C01-98E3-2A1AE1392A11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57413020-A63B-4C01-98E3-2A1AE1392A11}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{57413020-A63B-4C01-98E3-2A1AE1392A11} = {4DAAE153-A634-4B3E-A6D5-37D6345182A1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {85C29D5E-25A3-4527-8224-9D39418E14A4}
+	EndGlobalSection
+EndGlobal
