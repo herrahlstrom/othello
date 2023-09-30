@@ -15,9 +15,13 @@ public class Game
         _table = new PlayerColor?[64];
     }
 
+    public int BlackPoints => _table.Count(x => x == PlayerColor.Black);
+
     public PlayerColor CurrentPlayer { get; private set; }
 
     public IReadOnlyList<PlayerColor?> Table => _table;
+
+    public int WhitePoints => _table.Count(x => x == PlayerColor.White);
 
     public bool CanPlaceStone(int index)
     {

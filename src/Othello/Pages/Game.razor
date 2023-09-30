@@ -8,10 +8,12 @@
 <div class="players">
     <div class="player white @(_game.CurrentPlayer == Engine.PlayerColor.White ? "current":"")">
         <div class="name">Vit</div>
+        <div class="points">@_game.WhitePoints</div>
         <div class="icon"></div>
     </div>
     <div class="player black @(_game.CurrentPlayer == Engine.PlayerColor.Black ? "current":"")">
         <div class="name">Svart</div>
+        <div class="points">@_game.BlackPoints</div>
         <div class="icon"></div>
     </div>
 </div>
@@ -38,6 +40,10 @@
     </div>
 </div>
 
+<div class="button-bar">
+    <button @onclick="StartNewGame">Starta nytt spel</button>
+</div>
+
 @code {
     private const string TokenQueryName = "token";
     private Othello.Engine.Game _game = default!;
@@ -58,6 +64,11 @@
         {
             _game.LoadGame(Token);
         }
+    }
+
+    private void StartNewGame()
+    {
+        _game.InitGame();
     }
 
     private void PlaceStone(int index)
