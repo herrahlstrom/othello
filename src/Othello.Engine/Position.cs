@@ -4,6 +4,14 @@ public record struct Position(int X, int Y)
 {
     public int Index => Y * 8 + X;
 
+    public bool IsCorner =>
+        X == 0 && Y == 0 ||
+        X == 7 && Y == 0 ||
+        X == 0 && Y == 7 ||
+        X == 7 && Y == 7;
+
+    public bool IsEdge => X == 0 || Y == 0 || X == 7 || Y == 7;
+
     public static Position FromIndex(int index) => new Position(index % 8, index / 8);
 
     public bool TryMove(int deltaX, int deltaY, out Position path)

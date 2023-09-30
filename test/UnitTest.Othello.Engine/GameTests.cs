@@ -1,3 +1,4 @@
+using FakeItEasy;
 using FluentAssertions;
 using Othello.Engine;
 
@@ -6,10 +7,12 @@ namespace UnitTest.Othello.Engine;
 [TestClass]
 public class GameTests
 {
+    IAi _ai = A.Fake<IAi>();
+
     [TestMethod]
     public void CanPlaceStone_EmptyTable_ShouldAlwaysBeFalse()
     {
-        var game = new Game();
+        var game = new Game(_ai);
 
         for (int i = 0; i < 64; i++)
         {
@@ -20,7 +23,7 @@ public class GameTests
     [TestMethod]
     public void CanPlaceStone_StartTable_BlackShouldBeAbleToPlaceOnFourPositions()
     {
-        var game = new Game();
+        var game = new Game(_ai);
         game.InitGame(PlayerColor.Black);
 
         var expected = new[] {
@@ -39,7 +42,7 @@ public class GameTests
     [TestMethod]
     public void CanPlaceStone_StartTable_WhiteShouldBeAbleToPlaceOnFourPositions()
     {
-        var game = new Game();
+        var game = new Game(_ai);
         game.InitGame(PlayerColor.White);
 
         var expected = new[] {

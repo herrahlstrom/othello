@@ -9,9 +9,11 @@ namespace Othello.Engine;
 public class Game
 {
     public readonly PlayerColor?[] _table;
+    private readonly IAi _ai;
 
-    public Game()
+    public Game(IAi ai)
     {
+        _ai = ai;
         _table = new PlayerColor?[64];
     }
 
@@ -23,12 +25,7 @@ public class Game
 
     public int WhitePoints => _table.Count(x => x == PlayerColor.White);
 
-    public bool CanPlaceStone(int index)
-    {
-        index.Throw().IfOutOfRange(0, 63);
-
-        return _table[index] == null && GetFlippableStones(index) > 0;
-    }
+    public bool CanPlaceStone(int index) => Rules.CanPlaceStone(_table, CurrentPlayer, index);
 
     public void InitGame(PlayerColor? startPlayer = null)
     {
@@ -79,7 +76,7 @@ public class Game
     {
         index.Throw().IfOutOfRange(0, 63);
 
-        var stonesToFlip = GetFlippableStones(index);
+        var stonesToFlip = Rules.GetFlippableStones(_table, CurrentPlayer, index);
         _table[index] = CurrentPlayer;
         for (int i = 0; stonesToFlip > 0; i++)
         {
@@ -91,6 +88,12 @@ public class Game
         }
 
         CurrentPlayer = CurrentPlayer.Equals(PlayerColor.White) ? PlayerColor.Black : PlayerColor.White;
+    }
+
+    public void PlaceStoneWithAi()
+    {
+        var index = _ai.GetIndex(_table, CurrentPlayer);
+        PlaceStone(index);
     }
 
     public string Serialize()
@@ -118,45 +121,6 @@ public class Game
         var json = JsonSerializer.Serialize(model);
         var bytes = Encoding.UTF8.GetBytes(json);
         return Convert.ToBase64String(bytes);
-    }
-
-    private ulong GetFlippableStones(int index)
-    {
-        index.Throw().IfOutOfRange(0, 63);
-
-        Position pos = Position.FromIndex(index);
-
-        return
-            GetFlippableStones(-1, 0) |
-            GetFlippableStones(+1, 0) |
-            GetFlippableStones(0, -1) |
-            GetFlippableStones(0, +1) |
-            GetFlippableStones(-1, -1) |
-            GetFlippableStones(-1, +1) |
-            GetFlippableStones(+1, -1) |
-            GetFlippableStones(+1, +1);
-
-        ulong GetFlippableStones(int deltaX, int deltaY)
-        {
-            ulong flippedStones = 0;
-            Position next = pos;
-
-            while (next.TryMove(deltaX, deltaY, out Position candidateForNext) && _table[candidateForNext.Index] is not null)
-            {
-                if (_table[candidateForNext.Index] == CurrentPlayer)
-                {
-                    return flippedStones;
-                }
-                else
-                {
-                    flippedStones |= (ulong)1 << candidateForNext.Index;
-                    next = candidateForNext;
-                    continue;
-                }
-            }
-
-            return 0;
-        }
     }
 
     private record SerializeGame(
