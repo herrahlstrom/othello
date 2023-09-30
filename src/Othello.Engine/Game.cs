@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Othello.Engine.AI;
 using Throw;
 
 namespace Othello.Engine;
@@ -20,7 +21,7 @@ public class Game : ISerialiable
 
     public GameTable Table { get; }
 
-    public bool CanPlaceStone(int index) => Rules.CanPlaceStone(Table, CurrentPlayer, index);
+    public bool CanPlaceStone(Position pos) => Rules.CanPlaceStone(Table, CurrentPlayer, pos);
 
     public void InitGame(PlayerColor? startPlayer = null)
     {
@@ -47,17 +48,17 @@ public class Game : ISerialiable
         Table.Load(model.Table);
     }
 
-    public void PlaceStone(int index)
+    public void PlaceStone(Position pos)
     {
-        Table.PlaceStone(index, CurrentPlayer);
+        Table.PlaceStone(pos, CurrentPlayer);
 
         CurrentPlayer = CurrentPlayer.Equals(PlayerColor.White) ? PlayerColor.Black : PlayerColor.White;
     }
 
     public void PlaceStoneWithAi()
     {
-        var index = _ai.GetIndex(Table, CurrentPlayer);
-        PlaceStone(index);
+        var pos = _ai.GetIndex(Table, CurrentPlayer);
+        PlaceStone(pos);
     }
 
     public string Serialize()

@@ -63,10 +63,10 @@ public class GameTable : ISerialiable
 
     public int NumberOf(PlayerColor color) => _cells.Count(x => x == color);
 
-    public void PlaceStone(int index, PlayerColor color)
+    public void PlaceStone(Position pos, PlayerColor color)
     {
-        var stonesToFlip = Rules.GetFlippableStones(this, color, index);
-        _cells[index] = color;
+        var stonesToFlip = Rules.GetFlippableStones(this, color, pos);
+        _cells[pos.Index] = color;
         for (int i = 0; stonesToFlip > 0; i++)
         {
             if ((stonesToFlip & 1) == 1)

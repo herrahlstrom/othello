@@ -2,6 +2,21 @@
 
 public record struct Position(int X, int Y)
 {
+
+    public static IEnumerable<Position> All
+    {
+        get
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    yield return new Position(x, y);
+                }
+            }
+        }
+    }
+
     public int Index => Y * 8 + X;
 
     public bool IsCorner =>

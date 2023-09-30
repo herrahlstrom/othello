@@ -1,6 +1,7 @@
 using FakeItEasy;
 using FluentAssertions;
 using Othello.Engine;
+using Othello.Engine.AI;
 
 namespace UnitTest.Othello.Engine;
 
@@ -16,7 +17,8 @@ public class GameTests
 
         for (int i = 0; i < 64; i++)
         {
-            game.CanPlaceStone(i).Should().BeFalse();
+            var pos = Position.FromIndex(i);
+            game.CanPlaceStone(pos).Should().BeFalse();
         }
     }
 
@@ -63,7 +65,8 @@ public class GameTests
     {
         for (int i = 0; i < 64; i++)
         {
-            if (game.CanPlaceStone(i))
+            var pos = Position.FromIndex(i);
+            if (game.CanPlaceStone(pos))
             {
                 yield return i;
             }

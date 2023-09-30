@@ -1,52 +1,52 @@
-﻿using Throw;
-
-namespace Othello.Engine;
+﻿namespace Othello.Engine;
 
 internal class Rules
 {
-    public static bool CanPlaceStone(GameTable table, PlayerColor player, int index)
+    private static Direction[] Directions = new Direction[]
     {
-        index.Throw().IfOutOfRange(0, 63);
+        new(-1, 0),
+        new(+1, 0),
+        new(0, -1),
+        new(0, +1),
+        new(-1, -1),
+        new(-1, +1),
+        new(+1, -1),
+        new(+1, +1)
+    };
 
-        return table[index] == null && GetFlippableStones(table, player, index) > 0;
+    public static bool CanPlaceStone(GameTable table, PlayerColor player, Position pos)
+    {
+        return table[pos.Index] == null && Directions.Any(dir => GetFlippableStones(table, pos, player, dir) > 0);
     }
 
-    public static ulong GetFlippableStones(GameTable table, PlayerColor player, int index)
+    public static ulong GetFlippableStones(GameTable table, PlayerColor player, Position pos)
     {
-        index.Throw().IfOutOfRange(0, 63);
+        return Directions.Aggregate(
+            (ulong)0,
+            (seed, dir) => seed | GetFlippableStones(table, pos, player, dir));
+    }
 
-        Position pos = Position.FromIndex(index);
+    private static ulong GetFlippableStones(GameTable table, Position pos, PlayerColor player, Direction dir)
+    {
+        ulong flippedStones = 0;
+        Position next = pos;
 
-        return
-            GetFlippableStones(-1, 0) |
-            GetFlippableStones(+1, 0) |
-            GetFlippableStones(0, -1) |
-            GetFlippableStones(0, +1) |
-            GetFlippableStones(-1, -1) |
-            GetFlippableStones(-1, +1) |
-            GetFlippableStones(+1, -1) |
-            GetFlippableStones(+1, +1);
-
-        ulong GetFlippableStones(int deltaX, int deltaY)
+        while (next.TryMove(dir.X, dir.Y, out Position candidateForNext) && table[candidateForNext.Index] is not null)
         {
-            ulong flippedStones = 0;
-            Position next = pos;
-
-            while (next.TryMove(deltaX, deltaY, out Position candidateForNext) && table[candidateForNext.Index] is not null)
+            if (table[candidateForNext.Index] == player)
             {
-                if (table[candidateForNext.Index] == player)
-                {
-                    return flippedStones;
-                }
-                else
-                {
-                    flippedStones |= (ulong)1 << candidateForNext.Index;
-                    next = candidateForNext;
-                    continue;
-                }
+                return flippedStones;
             }
-
-            return 0;
+            else
+            {
+                flippedStones |= (ulong)1 << candidateForNext.Index;
+                next = candidateForNext;
+                continue;
+            }
         }
+
+        return 0;
     }
+
+    private record struct Direction(int X, int Y);
 }

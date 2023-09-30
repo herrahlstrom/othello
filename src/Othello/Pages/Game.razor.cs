@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Othello.Engine;
+using System;
 using System.Timers;
 using System.Web;
 
@@ -93,9 +94,10 @@ public partial class Game
 
     private void PlaceStone(int index)
     {
-        if (OthelloGame.CanPlaceStone(index))
+        var pos = Position.FromIndex(index);
+        if (OthelloGame.CanPlaceStone(pos))
         {
-            OthelloGame.PlaceStone(index);
+            OthelloGame.PlaceStone(pos);
 
             AfterStonePlaced();
         }
