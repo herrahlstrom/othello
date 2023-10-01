@@ -6,6 +6,13 @@
 
 <PageTitle>Othello</PageTitle>
 
+@if(_exception != null)
+{
+    <h6 class="text-secondary">@_exception.GetType()</h6>
+    <h2 class="text-danger">@_exception.Message</h2>
+    <text>@_exception.StackTrace</text>
+}
+
 <div class="players">
     @foreach (var player in Players)
     {

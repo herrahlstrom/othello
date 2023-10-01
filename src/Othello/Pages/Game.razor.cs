@@ -11,6 +11,7 @@ public partial class Game
     private const string TokenQueryName = "token";
     private System.Timers.Timer _aiDelay;
     HashSet<int> _errorCells = new();
+    Exception? _exception = null;
 
     public Game()
     {
@@ -52,7 +53,7 @@ public partial class Game
         {
             OthelloGame.Load(Token);
         }
-        
+
         AfterStonePlaced();
     }
 
@@ -75,35 +76,57 @@ public partial class Game
 
     private void AiDelayTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        if (sender == null)
+        try
         {
-            throw new ArgumentNullException(nameof(sender), $"{nameof(sender)} is null.");
-        }
+            if (sender == null)
+            {
+                throw new ArgumentNullException(nameof(sender), $"{nameof(sender)} is null.");
+            }
 
-        if (e == null)
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e), $"{nameof(e)} is null.");
+            }
+
+            if (!CurrentPlayer.Ai) { return; }
+
+            OthelloGame.PlaceStoneWithAi();
+
+            AfterStonePlaced();
+        }
+        catch (Exception ex)
         {
-            throw new ArgumentNullException(nameof(e), $"{nameof(e)} is null.");
+            _exception = ex;
         }
-
-        if (!CurrentPlayer.Ai) { return; }
-
-        OthelloGame.PlaceStoneWithAi();
-
-        AfterStonePlaced();
+        finally
+        {
+            StateHasChanged();
+        }
     }
 
     private void PlaceStone(int index)
     {
-        var pos = Position.FromIndex(index);
-        if (OthelloGame.CanPlaceStone(pos))
+        try
         {
-            OthelloGame.PlaceStone(pos);
+            var pos = Position.FromIndex(index);
+            if (OthelloGame.CanPlaceStone(pos))
+            {
+                OthelloGame.PlaceStone(pos);
 
-            AfterStonePlaced();
+                AfterStonePlaced();
+            }
+            else
+            {
+                _errorCells.Add(index);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _errorCells.Add(index);
+            _exception = ex;
+        }
+        finally
+        {
+            StateHasChanged();
         }
     }
 
