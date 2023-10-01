@@ -1,46 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Othello.Engine.AI;
 internal class PredictiveAi : AiBase, IAi
 {
-    IAi _baseAi;
-    public PredictiveAi()
-    {
-        _baseAi = new SimpleAi();
-    }
-
     public Position GetIndex(GameTable table, PlayerColor player)
     {
-        // Any possible corners?
-        foreach (var pos in Position.All.Where(x => x.IsCorner))
-        {
-            if (Rules.GetFlippableStones(table, player, pos) > 0)
-            {
-                return pos;
-            }
-        }
-
         var candidates = new List<Candidate>();
-        for (int i = 0; i < 64; i++)
-        {
-            var pos = Position.FromIndex(i);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
-            var stones = Rules.GetFlippableStones(table, player, pos);
-            if (stones == 0) { continue; }
-
-            int points = GetNumberOfStones(stones);
-
-            var workingTable = table.Clone();
-            workingTable.PlaceStone(pos, player);
-            points -= CalcContraPoints(workingTable, OtherPlayer(player), 1);
-
-            candidates.Add(new Candidate(pos, points));
-        }
+        GetPoints(table, player, 4, candidates.Add, cts.Token);
 
         if (candidates.Count == 0)
         {
@@ -54,16 +23,23 @@ internal class PredictiveAi : AiBase, IAi
                          .First();
     }
 
-    private int CalcContraPoints(GameTable table, PlayerColor player, int level)
+    private void GetPoints(GameTable table, PlayerColor player, int level, Action<Candidate> callback, CancellationToken cancellationToken)
     {
-        int maxPoints = 0;
-
         for (int i = 0; i < 64; i++)
         {
-            var pos = Position.FromIndex(i);
-            var stones = Rules.GetFlippableStones(table, player, pos);
+            if (table[i] != null)
+            {
+                continue;
+            }
 
-            if (stones == 0) { continue; }
+            cancellationToken.ThrowIfCancellationRequested();
+            var pos = Position.FromIndex(i);
+
+            var stones = Rules.GetFlippableStones(table, player, pos);
+            if (stones == 0)
+            {
+                continue;
+            }
 
             int points = GetNumberOfStones(stones);
 
@@ -79,19 +55,23 @@ internal class PredictiveAi : AiBase, IAi
 
             if (level > 1)
             {
-                var workingTable = table.Clone();
+                var workingTable = table.Copy();
                 workingTable.PlaceStone(pos, player);
-                points -= CalcContraPoints(workingTable, OtherPlayer(player), level - 1);
+
+                int contraPoins = -1000;
+                GetPoints(workingTable, player, level - 1, candidate =>
+                {
+                    if (candidate.Point > contraPoins)
+                    {
+                        contraPoins = candidate.Point;
+                    }
+                }, cancellationToken);
+                points -= contraPoins;
             }
 
-            if (points > maxPoints)
-            {
-                maxPoints = points;
-            }
+            callback.Invoke(new Candidate(pos, points));
         }
-
-        return maxPoints;
     }
 
-    private record Candidate(Position Pos, int Point);
+    private record struct Candidate(Position Pos, int Point);
 }

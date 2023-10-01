@@ -14,18 +14,18 @@ public class GameTable : ISerialiable
     }
 
     private GameTable(GameTable source)
+        : this()
     {
-        _cells = new PlayerColor?[64];
         for (int i = 0; i < 64; i++)
         {
-            _cells[i] = source[i];
+            _cells[i] = source._cells[i];
         }
     }
 
     public PlayerColor? this[int index] => _cells[index];
     public PlayerColor? this[Position pos] => _cells[pos.Index];
 
-    public GameTable Clone() => new GameTable(this);
+    public GameTable Copy() => new GameTable(this);
 
     public void InitNewGame()
     {
@@ -65,6 +65,11 @@ public class GameTable : ISerialiable
 
     public void PlaceStone(Position pos, PlayerColor color)
     {
+        if (_cells[pos.Index] != null)
+        {
+            throw new InvalidMoveException($"Position {pos} can't be placed, due its occupied!");
+        }
+
         var stonesToFlip = Rules.GetFlippableStones(this, color, pos);
         _cells[pos.Index] = color;
         for (int i = 0; stonesToFlip > 0; i++)
