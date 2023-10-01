@@ -21,6 +21,3 @@
             .o-table .o-cell .stone.black { background-color: #000000; }
         .o-table .o-cell button { height: 100%; width: 100%; transition: all ease-in-out 1s; background-color: transparent; border: none; }
             .o-table .o-cell button.error { background-color: #990000; cursor: not-allowed; }
-
-.button-bar { margin-top: 2rem; margin-bottom: 1rem; display: flex; gap: 1rem; }
-    .button-bar button { padding: 0.5rem 2rem; border-radius: 0.75rem; }

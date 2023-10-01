@@ -1,7 +1,40 @@
 ﻿@page "/"
+@layout EmptyLayout
+@using Othello.ViewModels;
+@using Othello.Engine;
+@inject Othello.Engine.AI.IAi Ai;
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Othello</PageTitle>
 
-<h1>Hello, world!</h1>
+@if (_game is { } game)
+{
+    <Game Model="@game" Options="@_options" />
 
-Welcome to your new app.
+    <div class="mt-3">
+        <button class="btn btn-secondary" @onclick="CloseGame">Avbryt spel</button>
+    </div>
+}
+else
+{
+    <Options Model="@(_options)" />
+
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="StartGame">Start</button>
+    </div>
+}
+
+@code {
+    private GameOptions _options = new();
+    private Othello.Engine.Game? _game = null;
+
+    private void CloseGame()
+    {
+        _game = null;
+    }
+
+    private void StartGame()
+    {
+        _game = new Othello.Engine.Game(Ai);
+        _game.InitGame(_options.StartPlayer);
+    }
+}

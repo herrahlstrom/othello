@@ -1,55 +1,47 @@
-﻿@page "/game"
-@using Othello.Engine;
-@inject NavigationManager NavMan;
-@inject Engine.Game OthelloGame;
-@layout EmptyLayout
+﻿@using Othello.Engine;
 
-<PageTitle>Othello</PageTitle>
-
-@if(_exception != null)
+@if (_exception != null)
 {
     <h6 class="text-secondary">@_exception.GetType()</h6>
     <h2 class="text-danger">@_exception.Message</h2>
     <text>@_exception.StackTrace</text>
 }
 
-<div class="players">
-    @foreach (var player in Players)
-    {
-        <div class="player @(player.Color.ToString().ToLower()) @(OthelloGame.CurrentPlayer == player.Color ? "current":"")">
-            <div class="name">@player.Name</div>
-            <div class="points">@player.Points</div>
-            <div class="icon"></div>
-            <div class="ai">AI: <InputCheckbox @bind-Value="player.Ai" /></div>
-        </div>
-    }
-</div>
-
-<div class="o-content">
-    <div class="o-table">
-        @for (int i = 0; i < 64; i++)
+@if (Model is { } game)
+{
+    <div class="players">
+        @foreach (var player in Players)
         {
-            int index = i;
-            <div class="o-cell">
-                @if (OthelloGame.Table[index] is null)
-                {
-                    <button @onclick="()=>OnPlaceButtonClick(index)" class="@(_errorCells.Contains(i)?"error":"")"></button>
-                }
-                else
-                {
-                    string whiteCssStatus = OthelloGame.Table[index].Equals(Othello.Engine.PlayerColor.White) ? "up" : "down";
-                    string blackCssStatus = OthelloGame.Table[index].Equals(Othello.Engine.PlayerColor.Black) ? "up" : "down";
-                    <div class="stone white @(whiteCssStatus)"></div>
-                    <div class="stone black @(blackCssStatus)"></div>
-                }
+            <div class="player @(player.Color.ToString().ToLower()) @(game.CurrentPlayer == player.Color ? "current":"")">
+                <div class="name">@player.Name</div>
+                <div class="points">@player.Points</div>
+                <div class="icon"></div>
             </div>
         }
     </div>
-</div>
 
-<div class="button-bar">
-    <button @onclick="StartNewGame">Starta nytt spel</button>
-</div>
+    <div class="o-content">
+        <div class="o-table">
+            @for (int i = 0; i < 64; i++)
+            {
+                int index = i;
+                <div class="o-cell">
+                    @if (game.Table[index] is null)
+                    {
+                        <button @onclick="()=>OnPlaceButtonClick(index)" class="@(_errorCells.Contains(i)?"error":"")"></button>
+                    }
+                    else
+                    {
+                        string whiteCssStatus = game.Table[index].Equals(Othello.Engine.PlayerColor.White) ? "up" : "down";
+                        string blackCssStatus = game.Table[index].Equals(Othello.Engine.PlayerColor.Black) ? "up" : "down";
+                        <div class="stone white @(whiteCssStatus)"></div>
+                        <div class="stone black @(blackCssStatus)"></div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
 
 @code {
     private void OnPlaceButtonClick(int index)

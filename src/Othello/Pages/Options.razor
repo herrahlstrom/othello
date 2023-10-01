@@ -1,0 +1,37 @@
+﻿@using Othello.Engine;
+@using Othello.ViewModels;
+
+<div class="mb-3">
+    <h6 for="start-player">Vilken spare börjar?</h6>
+    <InputRadioGroup @bind-Value="Model.StartPlayer" id="start-player">
+        <div>
+            <div class="form-check">
+                <InputRadio Value="PlayerColor.White" id="start-player-white" /> <label class="form-check-label" for="start-player-white">Vit</label>
+            </div>
+            <div class="form-check">
+                <InputRadio Value="PlayerColor.Black" id="start-player-black" /> <label class="form-check-label" for="start-player-black">Svart</label>
+            </div>
+        </div>
+    </InputRadioGroup>
+</div>
+
+<div class="mb-3">
+    <h6 for="ai">AI</h6>
+    <InputRadioGroup @bind-Value="Model.Ai" id="ai">
+        <div class="form-check">
+            <InputRadio Value="@string.Empty" id="ai-player-none" /> <label class="form-check-label" for="ai-player-none">Ingen</label>
+        </div>
+        <div class="form-check">
+            <InputRadio Value="@nameof(PlayerColor.White)" id="ai-player-white" /> <label class="form-check-label" for="ai-player-white">Vit</label>
+        </div>
+        <div class="form-check">
+            <InputRadio Value="@nameof(PlayerColor.Black)" id="ai-player-black" /> <label class="form-check-label" for="ai-player-black">Svart</label>
+        </div>
+    </InputRadioGroup>
+</div>
+
+@code {
+
+    [Parameter]
+    public GameOptions Model { get; set; } = default!;
+}

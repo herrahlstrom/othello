@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Othello.Engine;
+using Othello.ViewModels;
 using System;
 using System.Timers;
 using System.Web;
@@ -8,10 +9,9 @@ namespace Othello.Pages;
 
 public partial class Game
 {
-    private const string TokenQueryName = "token";
-    private System.Timers.Timer _aiDelay;
-    HashSet<int> _errorCells = new();
-    Exception? _exception = null;
+    private readonly System.Timers.Timer _aiDelay;
+    private readonly HashSet<int> _errorCells = new();
+    private Exception? _exception = null;
 
     public Game()
     {
@@ -19,15 +19,18 @@ public partial class Game
         _aiDelay.Elapsed += AiDelayTimerElapsed;
 
         WhitePlayer = new Player(PlayerColor.White, "Vit");
-        WhitePlayer.AiActivated += Player_AiActivated;
-
         BlackPlayer = new Player(PlayerColor.Black, "Svart");
-        BlackPlayer.AiActivated += Player_AiActivated;
     }
 
     public Player BlackPlayer { get; }
 
-    public Player CurrentPlayer => Players.First(x => x.Color == OthelloGame.CurrentPlayer);
+    public Player CurrentPlayer => Players.First(x => x.Color == Model.CurrentPlayer);
+
+    [Parameter]
+    public Engine.Game Model { get; set; } = default!;
+
+    [Parameter]
+    public GameOptions Options { get; set; } = default!;
 
     public IEnumerable<Player> Players
     {
@@ -38,33 +41,25 @@ public partial class Game
         }
     }
 
-    [Parameter, SupplyParameterFromQuery(Name = TokenQueryName)]
-    public string? Token { get; set; }
-
     public Player WhitePlayer { get; }
 
     protected override void OnInitialized()
     {
-        if (string.IsNullOrEmpty(Token))
-        {
-            OthelloGame.InitGame();
-        }
-        else
-        {
-            OthelloGame.Load(Token);
-        }
-
         AfterStonePlaced();
+    }
+
+    protected override void OnParametersSet()
+    {
+        WhitePlayer.Ai = Options.Ai == nameof(PlayerColor.White);
+        BlackPlayer.Ai = Options.Ai == nameof(PlayerColor.Black);
     }
 
     private void AfterStonePlaced()
     {
         _errorCells.Clear();
 
-        SaveGameState();
-
-        WhitePlayer.Points = OthelloGame.Table.NumberOf(WhitePlayer.Color);
-        BlackPlayer.Points = OthelloGame.Table.NumberOf(BlackPlayer.Color);
+        WhitePlayer.Points = Model.Table.NumberOf(WhitePlayer.Color);
+        BlackPlayer.Points = Model.Table.NumberOf(BlackPlayer.Color);
 
         if (CurrentPlayer.Ai)
         {
@@ -90,7 +85,7 @@ public partial class Game
 
             if (!CurrentPlayer.Ai) { return; }
 
-            OthelloGame.PlaceStoneWithAi();
+            Model.PlaceStoneWithAi();
 
             AfterStonePlaced();
         }
@@ -109,9 +104,9 @@ public partial class Game
         try
         {
             var pos = Position.FromIndex(index);
-            if (OthelloGame.CanPlaceStone(pos))
+            if (Model.CanPlaceStone(pos))
             {
-                OthelloGame.PlaceStone(pos);
+                Model.PlaceStone(pos);
 
                 AfterStonePlaced();
             }
@@ -137,54 +132,4 @@ public partial class Game
             _aiDelay.Start();
         }
     }
-
-    private void SaveGameState()
-    {
-        Token = OthelloGame.Serialize();
-
-        var uri = NavMan.ToAbsoluteUri(NavMan.Uri);
-        var queryCollection = HttpUtility.ParseQueryString(uri.Query);
-        queryCollection[TokenQueryName] = Token;
-
-        var uriBuilder = new UriBuilder(uri);
-        uriBuilder.Query = queryCollection.ToString();
-
-        NavMan.NavigateTo(uriBuilder.Uri.AbsoluteUri, new NavigationOptions() { ForceLoad = false, ReplaceHistoryEntry = true });
-    }
-
-    private void StartNewGame()
-    {
-        OthelloGame.InitGame();
-
-        AfterStonePlaced();
-    }
-}
-
-public class Player
-{
-    private bool _ai;
-
-    public Player(PlayerColor color, string name)
-    {
-        Color = color;
-        Name = name;
-    }
-
-    public event EventHandler AiActivated;
-
-    public bool Ai
-    {
-        get => _ai; set
-        {
-            _ai = value;
-
-            if (value)
-            {
-                AiActivated?.Invoke(this, EventArgs.Empty);
-            }
-        }
-    }
-    public PlayerColor Color { get; }
-    public string Name { get; }
-    public int Points { get; set; }
 }

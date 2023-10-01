@@ -7,7 +7,7 @@ using Throw;
 
 namespace Othello.Engine;
 
-public class Game : ISerialiable
+public class Game
 {
     private readonly IAi _ai;
 
@@ -34,20 +34,6 @@ public class Game : ISerialiable
                 : PlayerColor.Black;
     }
 
-    public void Load(string data)
-    {
-        var bytes = Convert.FromBase64String(data);
-        var json = Encoding.UTF8.GetString(bytes);
-        var model = JsonSerializer.Deserialize<SerializeGame>(json)
-            ?? throw new JsonException("Invalid json");
-
-        CurrentPlayer = model.Current == "W"
-            ? PlayerColor.White
-            : PlayerColor.Black;
-
-        Table.Load(model.Table);
-    }
-
     public void PlaceStone(Position pos)
     {
         Table.PlaceStone(pos, CurrentPlayer);
@@ -60,34 +46,4 @@ public class Game : ISerialiable
         var pos = _ai.GetIndex(Table, CurrentPlayer);
         PlaceStone(pos);
     }
-
-    public string Serialize()
-    {
-        ulong white = 0;
-        ulong black = 0;
-
-        for (int i = 0; i < 64; i++)
-        {
-            if (Table[i] == PlayerColor.White)
-            {
-                white |= (ulong)1 << i;
-            }
-            else if (Table[i] == PlayerColor.Black)
-            {
-                black |= (ulong)1 << i;
-            }
-        }
-
-        var model = new SerializeGame(
-            Current: CurrentPlayer == PlayerColor.White ? "W" : "B",
-            Table: Table.Serialize());
-
-        var json = JsonSerializer.Serialize(model);
-        var bytes = Encoding.UTF8.GetBytes(json);
-        return Convert.ToBase64String(bytes);
-    }
-
-    private record SerializeGame(
-        [property: JsonPropertyName("C")] string Current,
-        [property: JsonPropertyName("T")] string Table);
 }

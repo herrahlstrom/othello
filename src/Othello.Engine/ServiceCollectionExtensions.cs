@@ -16,10 +16,4 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IAi, PredictiveAi>();
         return serviceCollection;
     }
-
-    public static IServiceCollection AddGame(this IServiceCollection serviceCollection)
-    {
-        serviceCollection.AddSingleton<Game>();
-        return serviceCollection;
-    }
 }
