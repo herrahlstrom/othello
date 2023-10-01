@@ -18,6 +18,7 @@ internal class PredictiveAi : AiBase, IAi
 
         return candidates.OrderBy(x => x.Pos.IsCorner ? 0 : 1)
                          .ThenBy(x => x.Pos.IsEdge ? 0 : 1)
+                         .ThenBy(x => x.Pos.IsDangerZone ? 1 : 0)
                          .OrderByDescending(x => x.Point)
                          .Select(x => x.Pos)
                          .First();
@@ -43,14 +44,17 @@ internal class PredictiveAi : AiBase, IAi
 
             int points = GetNumberOfStones(stones);
 
-            // extra points fro corner and edges
-            if (pos.IsCorner)
+            if(pos.IsCorner)
             {
                 points += 30;
             }
-            else if (pos.IsEdge)
+            else if(pos.IsEdge)
             {
                 points += 10;
+            }
+            else if(pos.IsDangerZone)
+            {
+                points -= 5;
             }
 
             if (level > 1)

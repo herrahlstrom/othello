@@ -24,8 +24,10 @@ public record struct Position(int X, int Y)
         X == 7 && Y == 0 ||
         X == 0 && Y == 7 ||
         X == 7 && Y == 7;
-
+    
     public bool IsEdge => X == 0 || Y == 0 || X == 7 || Y == 7;
+    
+    public bool IsDangerZone => X == 1 || Y == 1 || X == 6 || Y == 6;
 
     public static Position FromIndex(int index) => new Position(index % 8, index / 8);
 
